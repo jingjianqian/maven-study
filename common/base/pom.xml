@@ -12,5 +12,12 @@
     <groupId>top.jingjianqian.common.base</groupId>
     <artifactId>base</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.6</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 </project>
