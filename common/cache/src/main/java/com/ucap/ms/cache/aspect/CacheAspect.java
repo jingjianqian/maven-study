@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Aspect
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE - 2)
+@Order(100)
 public class CacheAspect {
     private final static Logger logger = LoggerFactory.getLogger(CacheAspect.class);
     /**
