@@ -22,24 +22,24 @@ public class CacheMyJedisPool {
 	private Logger log= LoggerFactory.getLogger(CacheMyJedisPool.class);
 	private CacheMyJedisPool() {
 		try {
-			String redisAddress= CommonCacheConfig.redisIp;
+			String redisAddress= new CommonCacheConfig().redisIp;
 			//分号分割代表多个 ; 此处采用哨兵redis主从模式
-			String password =CommonCacheConfig.redisPassword;
+			String password =new CommonCacheConfig().redisPassword;
 			
 			// 设置池配置项值
-			config.setMaxTotal(CommonCacheConfig.redisPoolMaxActive);
-			config.setMaxIdle(CommonCacheConfig.redisPoolMaxIdle);
+			config.setMaxTotal(new CommonCacheConfig().redisPoolMaxActive);
+			config.setMaxIdle(new CommonCacheConfig().redisPoolMaxIdle);
 			// 表示idle object evitor两次扫描之间要sleep的毫秒数
 			config.setTimeBetweenEvictionRunsMillis(30000);
 			// 表示idle object evitor每次扫描的最多的对象数
 			config.setNumTestsPerEvictionRun(10);
-			config.setMinIdle(CommonCacheConfig.redisPoolminIdle);
-			config.setMaxWaitMillis(Long.valueOf(CommonCacheConfig.redisPoolMaxWait));
-			config.setTestOnBorrow(Boolean.valueOf(CommonCacheConfig.redisPoolTestOnBorrow));
+			config.setMinIdle(new CommonCacheConfig().redisPoolminIdle);
+			config.setMaxWaitMillis(Long.valueOf(new CommonCacheConfig().redisPoolMaxWait));
+			config.setTestOnBorrow(Boolean.valueOf(new CommonCacheConfig().redisPoolTestOnBorrow));
 
 			// Idle时进行连接扫描
 			config.setTestWhileIdle(true);
-			config.setTestOnReturn(Boolean.valueOf(CommonCacheConfig.redisPoolTestOnReturn));
+			config.setTestOnReturn(Boolean.valueOf(new CommonCacheConfig().redisPoolTestOnReturn));
 			
 			if(redisAddress.indexOf(";")>0) {
 				Set<String> sentinels = new HashSet<String>();
@@ -47,13 +47,13 @@ public class CacheMyJedisPool {
 				for (int i = 0; i < redisIps.length; i++) {
 					sentinels.add(redisIps[i]);
 				}
-				String clusterName =CommonCacheConfig.redisClusterName;
+				String clusterName =new CommonCacheConfig().redisClusterName;
 				pool = new JedisSentinelPool(clusterName, sentinels, config,password);
 			}else {
-				String ips=CommonCacheConfig.redisIp;
+				String ips=new CommonCacheConfig().redisIp;
 				String ip=ips.split(":")[0];
 				int port=Integer.parseInt(ips.split(":")[1]);
-				int connTimeOut=Integer.parseInt(CommonCacheConfig.redisConnectTimeOut);
+				int connTimeOut=Integer.parseInt(new CommonCacheConfig().redisConnectTimeOut);
 				// 根据配置实例化jedis池
 				pool = new JedisPool(config,ip,port,connTimeOut,password);
 			}

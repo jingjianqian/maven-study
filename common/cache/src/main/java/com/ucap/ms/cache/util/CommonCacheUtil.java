@@ -1,7 +1,7 @@
 package com.ucap.ms.cache.util;
 
 import com.ucap.ms.base.utils.BaseTools;
-import com.ucap.ms.cache.service.CacheService;
+import com.ucap.ms.cache.service.CommonCacheService;
 import com.ucap.ms.cache.service.imp.CacheSingleRedisService;
 import org.apache.log4j.Logger;
 
@@ -11,16 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CommonCacheUtil {
 
     private static Logger logger = Logger.getLogger(CommonCacheUtil.class);
-    private static Map<String,CacheService> serviceMap = new ConcurrentHashMap<String,CacheService>();
+    private static Map<String, CommonCacheService> serviceMap = new ConcurrentHashMap<String, CommonCacheService>();
 
-    public static <T> CacheService<T> getCache(String appName) {
-        String cacheStrategy = CommonCacheConfig.cacheStrategy;
+    public static <T> CommonCacheService<T> getCache(String appName) {
+        String cacheStrategy = new CommonCacheConfig().cacheStrategy;
         if ("redis".equals(cacheStrategy)) {
-            String redisIps = CommonCacheConfig.redisIp;
+            String redisIps = new CommonCacheConfig().redisIp;
             if(BaseTools.checkEmpty(redisIps)) {
                 logger.error("redis缓存服务器不能为空");
             }
-            CacheService service = serviceMap.get(appName);
+            CommonCacheService service = serviceMap.get(appName);
             if(service == null) {
                 service = new CacheSingleRedisService(appName);
                 serviceMap.put(appName,service);

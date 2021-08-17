@@ -6,6 +6,7 @@ import xyz.erupt.annotation.Erupt;
 import xyz.erupt.annotation.EruptField;
 import xyz.erupt.annotation.sub_field.Edit;
 import xyz.erupt.annotation.sub_field.View;
+import xyz.erupt.jpa.model.BaseModel;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,7 +14,7 @@ import java.util.Date;
 @Erupt(name = "Dashboards")
 @Table(name= "lib_dashboards")
 @Entity
-public class Dashboards {
+public class Dashboards extends BaseModel {
     //主键
     @Id
     @GeneratedValue(generator = "generator")

@@ -1,11 +1,8 @@
-package com.ucap.ms.approve.aspect;
+package com.ucap.ms;
 
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,15 +16,15 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE - 2)
-public class MyAspect {
+public class CaAspect {
 
-    private final static Logger logger = LoggerFactory.getLogger(MyAspect.class);
+    private final static Logger logger = LoggerFactory.getLogger(CaAspect.class);
 
 
     /**
      * 切入点
      */
-    @Pointcut("@annotation(MyAnnotation) ")
+    @Pointcut("@annotation(CaAnnotation) ")
     public void access(){
         logger.info("切入点声明！！！");
     }
@@ -41,8 +38,8 @@ public class MyAspect {
      * redis 环绕通知AOP
      * @return
      */
-    @Around("access()&&@annotation(myAnnotation)")
-    public void execute(ProceedingJoinPoint proceedingJoinPoint, MyAnnotation myAnnotation){
+    @Around("access()&&@annotation(caAnnotation)")
+    public void execute(ProceedingJoinPoint proceedingJoinPoint, CaAnnotation caAnnotation){
         logger.info("Around。。。。。");
     }
 

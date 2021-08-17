@@ -2,7 +2,7 @@ package com.ucap.ms.cache.service;
 
 import java.util.Map;
 
-public interface CacheService<T> extends CacheCollectionService {
+public interface CommonCacheService<T> extends CacheCollectionService {
 	/**
 	 * 获取缓存中的数据
 	 * @param key 键

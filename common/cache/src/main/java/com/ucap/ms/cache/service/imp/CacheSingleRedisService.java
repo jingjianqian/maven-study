@@ -4,7 +4,7 @@ import com.ucap.ms.base.enums.CacheCodeEnum;
 import com.ucap.ms.base.utils.BaseSerializationUtil;
 import com.ucap.ms.base.utils.BaseTools;
 import com.ucap.ms.base.utils.BaseValidUtil;
-import com.ucap.ms.cache.service.CacheService;
+import com.ucap.ms.cache.service.CommonCacheService;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
@@ -18,7 +18,7 @@ import java.util.Set;
 /**
  * 单机redis及 redis主从模式 客户端
  */
-public class CacheSingleRedisService<T> implements CacheService<T> {
+public class CacheSingleRedisService<T> implements CommonCacheService<T> {
 	private static Logger logger = Logger.getLogger(CacheSingleRedisService.class);
 	private static final String LOCK_SUCCESS = "OK";
     private static final String SET_IF_NOT_EXIST = "NX";
