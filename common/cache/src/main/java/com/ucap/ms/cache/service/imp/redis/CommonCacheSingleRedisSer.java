@@ -1,22 +1,80 @@
 package com.ucap.ms.cache.service.imp.redis;
 
+import com.ucap.ms.base.enums.CacheCodeEnum;
+import com.ucap.ms.base.utils.BaseSerializationUtil;
+import com.ucap.ms.base.utils.BaseValidUtil;
 import com.ucap.ms.cache.service.CommonCacheService;
+import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
 
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Set;
 
+
+@Component
+@Scope("prototype")
 public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
 
-    public CommonCacheSingleRedisSer(String appName) {
-        if(CommonCacheJedisPool.cacheMap == null || CacheMyJedisPool.cacheMap.size() <= 0) {
+    @Resource
+    private CommonCacheJedisPool commonCacheJedisPool;
 
+    private int jedisDatabaseIndex;
+    private  Logger logger = Logger.getLogger(CacheSingleRedisService.class);
+
+    public CommonCacheSingleRedisSer(String appName) {
+        if(CacheMyJedisPool.cacheMap == null || CacheMyJedisPool.cacheMap.size() <= 0) {
+            for (CacheCodeEnum code : CacheCodeEnum.values()) {
+                CacheMyJedisPool.cacheMap.put(code.getValue(), code.getKey());
+            }
         }
+        if (BaseValidUtil.isEmpty(commonCacheJedisPool.cacheMap) || BaseValidUtil.isNull(appName) || BaseValidUtil.isEmpty(commonCacheJedisPool.cacheMap.get(appName))) {
+            jedisDatabaseIndex = 0;
+        } else {
+            jedisDatabaseIndex = commonCacheJedisPool.cacheMap.get(appName);
+        }
+    }
+
+    /** 获得jedis对象 */
+    public Jedis getJedis() {
+        return commonCacheJedisPool.getInstance().getJedis();
     }
 
     @Override
     public T get(String key) {
-        return null;
+        Jedis jedis = null;
+        try {
+            jedis = getJedis();
+            jedis.select(jedisDatabaseIndex);
+            byte[] b = jedis.get(key.getBytes());
+            return (T) BaseSerializationUtil.deserialize(b);
+        } catch (Exception e) {
+            logger.error("getCacheObjectByKey:key:" + key + ",error:" + e);
+            destoryJedisOjbect(jedis);
+            return null;
+        } finally {
+            recycleJedisToPool(jedis);
+        }
     }
+    /** 销毁jedis对象 */
+    public void destoryJedisOjbect(Jedis jedis) {
+        CacheMyJedisPool.destoryJedisOjbect(jedis);
+    }
+    public void recycleJedisToPool(Jedis jedis) {
+        if (jedis != null) {
+            try {
+                CacheMyJedisPool.recycleJedisOjbect(jedis);
+            } catch (Exception e) {
+                logger.error(e.getMessage(),e);
+            }
+        }
+    }
+
+
+
 
     @Override
     public String getString(String key) {
