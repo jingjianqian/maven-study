@@ -20,12 +20,16 @@ public class ApproveAuditItemApi {
     @Resource
     private ConfigClientController configClientController;
 
+
     @Resource
     ApproveAuditItemsSourceApi approveAuditItemsSourceApi;
 
 
     @Resource
     RestTemplate restTemplate;
+
+    @Resource
+    private CommonCacheUtil commonCacheUtil;
 
     /**
      * 获取accessToken
@@ -35,7 +39,7 @@ public class ApproveAuditItemApi {
     public String getAccessToken(Boolean refreshToken){
         try {
             if(!Boolean.TRUE.equals(refreshToken)){
-                String accessToken  = (String) CommonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get(configClientController.getKEY_AUDIT_ITEM_API_TOKEN());
+                String accessToken  = (String) commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get(configClientController.getKEY_AUDIT_ITEM_API_TOKEN());
                 if(accessToken !=null){
                     return accessToken;
                 }

@@ -6,6 +6,7 @@ import com.ucap.ms.base.model.BaseModel;
 import com.ucap.ms.base.utils.BaseTools;
 import com.ucap.ms.cache.service.CommonCacheService;
 import com.ucap.ms.cache.util.CommonCacheUtil;
+import com.ucap.ms.cache.util.CommonTest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -23,6 +24,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -39,6 +41,12 @@ import java.lang.reflect.Method;
 public class CacheAspect {
     private final static Logger logger = LoggerFactory.getLogger(CacheAspect.class);
     private final static String CACHE_ANNOTATION = CacheAspectAnnotation.class.getSimpleName();
+
+    @Resource
+    private CommonTest commonTest;
+
+    @Resource
+    private CommonCacheUtil commonCacheUtil;
 
     /**
      * 切入点
@@ -62,10 +70,11 @@ public class CacheAspect {
         logger.info("CacheAspect Around Starting");
         Object result = null;
         try {
-            //缓存实例
+            /** 缓存实例*/
             String cacheInstanceName = cacheAspectAnnotation.cacheCode().getValue();
-            CommonCacheService<Object> commonCacheService = CommonCacheUtil.getCache(cacheInstanceName);
-            // 方法对象
+            /** 获取缓存服务 **/
+            CommonCacheService<Object> commonCacheService = commonCacheUtil.getCache(cacheInstanceName);
+            /** 方法对象 **/
             Method method = getMethod(proceedingJoinPoint);
             // 参数
             Object[] args = proceedingJoinPoint.getArgs();

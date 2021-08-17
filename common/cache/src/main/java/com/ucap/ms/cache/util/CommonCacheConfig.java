@@ -2,6 +2,7 @@ package com.ucap.ms.cache.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -9,8 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
  * @time 2021-08-09
  * @author jjq
  */
-@RefreshScope
 @RestController
+@RefreshScope
+@Component
 public class CommonCacheConfig {
 
     @Value(value = "${redis.config.cacheStrategy}")

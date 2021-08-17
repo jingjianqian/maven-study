@@ -1,4 +1,4 @@
-package com.ucap.ms.cache.service.imp;
+package com.ucap.ms.cache.service.imp.redis;
 
 import com.ucap.ms.cache.util.CommonCacheConfig;
 import org.slf4j.Logger;
@@ -7,7 +7,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
+
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class CacheMyJedisPool {
 	private static CacheMyJedisPool redisPool;
 	@SuppressWarnings("rawtypes")
 	private static Pool pool;
+	private static Jedis jedis;
 	static JedisPoolConfig config = new JedisPoolConfig();// 创建jedis池配置实例
 	static HashMap<String, Integer> cacheMap = new HashMap<String, Integer>();
 	private Logger log= LoggerFactory.getLogger(CacheMyJedisPool.class);
@@ -25,7 +27,7 @@ public class CacheMyJedisPool {
 			String redisAddress= new CommonCacheConfig().redisIp;
 			//分号分割代表多个 ; 此处采用哨兵redis主从模式
 			String password =new CommonCacheConfig().redisPassword;
-			
+
 			// 设置池配置项值
 			config.setMaxTotal(new CommonCacheConfig().redisPoolMaxActive);
 			config.setMaxIdle(new CommonCacheConfig().redisPoolMaxIdle);
@@ -40,7 +42,7 @@ public class CacheMyJedisPool {
 			// Idle时进行连接扫描
 			config.setTestWhileIdle(true);
 			config.setTestOnReturn(Boolean.valueOf(new CommonCacheConfig().redisPoolTestOnReturn));
-			
+
 			if(redisAddress.indexOf(";")>0) {
 				Set<String> sentinels = new HashSet<String>();
 				String redisIps[]=redisAddress.split(";");
@@ -79,6 +81,7 @@ public class CacheMyJedisPool {
 
 	public static void recycleJedisOjbect(Jedis jedis) {
 
+//		pool.getResource(jedis);
 		pool.returnResource(jedis);
 
 	}
@@ -86,13 +89,13 @@ public class CacheMyJedisPool {
 	/** 销毁jedis对象 */
 
 	public static void destoryJedisOjbect(Jedis jedis) {
-
-		pool.returnBrokenResource(jedis);
+		pool.destroy();
+		//pool.returnBrokenResource(jedis);
 
 	}
 
 	/**
-	 * 
+	 *
 	 * 测试jedis池方法
 	 */
 

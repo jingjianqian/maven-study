@@ -1,4 +1,4 @@
-package com.ucap.ms.cache.service.imp;
+package com.ucap.ms.cache.service.imp.redis;
 
 import com.ucap.ms.base.enums.CacheCodeEnum;
 import com.ucap.ms.base.utils.BaseSerializationUtil;
@@ -345,7 +345,8 @@ public class CacheSingleRedisService<T> implements CommonCacheService<T> {
 		try {
 			jedis = getJedis();
 			jedis.select(jedisDatabaseIndex);
-			String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
+			//jedis. TODO
+			String result = "";//jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
 			 if (LOCK_SUCCESS.equals(result)) {
 				 flag= true;
 		     }
@@ -393,7 +394,7 @@ public class CacheSingleRedisService<T> implements CommonCacheService<T> {
 			jedis = getJedis();
 			if(jedis != null){
 				jedis.select(jedisDatabaseIndex);
-				String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST);//redis锁
+				String result = "";//jedis.set(lockKey, requestId, SET_IF_NOT_EXIST);//redis锁 TODO
 				if (LOCK_SUCCESS.equals(result)) {//判断是否成功
 					flag = true;
 				}
