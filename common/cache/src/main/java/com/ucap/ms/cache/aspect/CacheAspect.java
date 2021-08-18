@@ -5,8 +5,9 @@ import com.ucap.ms.base.exception.GlobalBaseErrorCode;
 import com.ucap.ms.base.model.BaseModel;
 import com.ucap.ms.base.utils.BaseTools;
 import com.ucap.ms.cache.service.CommonCacheService;
+import com.ucap.ms.cache.util.CmCacheConfig;
+import com.ucap.ms.cache.util.CommonCacheConfig;
 import com.ucap.ms.cache.util.CommonCacheUtil;
-import com.ucap.ms.cache.util.CommonTest;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -41,12 +42,17 @@ import java.lang.reflect.Method;
 public class CacheAspect {
     private final static Logger logger = LoggerFactory.getLogger(CacheAspect.class);
     private final static String CACHE_ANNOTATION = CacheAspectAnnotation.class.getSimpleName();
-
+    public  CacheAspect(){
+        logger.info("CacheAspect Contructor:",this.getClass().getName());
+    }
     @Resource
-    private CommonTest commonTest;
+    private CommonCacheConfig commonCacheConfig;
 
     @Resource
     private CommonCacheUtil commonCacheUtil;
+
+    @Resource
+    private CmCacheConfig cmCacheConfig;
 
     /**
      * 切入点
@@ -72,6 +78,10 @@ public class CacheAspect {
         try {
             /** 缓存实例*/
             String cacheInstanceName = cacheAspectAnnotation.cacheCode().getValue();
+            logger.info("cmCacheConfig:", cmCacheConfig.getCacheStrategy());
+            logger.info("cmCacheConfig:", cmCacheConfig.cacheStrategy);
+            logger.info("commonCacheConfig:"+ commonCacheConfig.getCacheStrategy());
+            logger.info("commonCacheConfig:"+ commonCacheConfig.cacheStrategy);
             /** 获取缓存服务 **/
             CommonCacheService<Object> commonCacheService = commonCacheUtil.getCache(cacheInstanceName);
             /** 方法对象 **/

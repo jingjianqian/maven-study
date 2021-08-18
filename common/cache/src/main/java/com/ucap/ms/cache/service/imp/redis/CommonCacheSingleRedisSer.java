@@ -5,7 +5,7 @@ import com.ucap.ms.base.utils.BaseSerializationUtil;
 import com.ucap.ms.base.utils.BaseValidUtil;
 import com.ucap.ms.cache.service.CommonCacheService;
 import org.apache.log4j.Logger;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -16,19 +16,27 @@ import java.util.Set;
 
 
 @Component
-@Scope("prototype")
 public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
 
     @Resource
     private CommonCacheJedisPool commonCacheJedisPool;
 
-    private int jedisDatabaseIndex;
-    private  Logger logger = Logger.getLogger(CacheSingleRedisService.class);
 
-    public CommonCacheSingleRedisSer(String appName) {
-        if(CacheMyJedisPool.cacheMap == null || CacheMyJedisPool.cacheMap.size() <= 0) {
+    public CommonCacheSingleRedisSer(){
+        logger.info("CommonCacheSingleRedisSer Contructor:"+this.getClass().getName());
+    }
+
+    private int jedisDatabaseIndex;
+    private  Logger logger = Logger.getLogger(CommonCacheSingleRedisSer.class);
+    private static final String LOCK_SUCCESS = "OK";
+    private static final String SET_IF_NOT_EXIST = "NX";
+    private static final String SET_WITH_EXPIRE_TIME = "PX";
+
+
+    public void  CommonCacheSingleRedisSerTest(String appName) {
+        if(commonCacheJedisPool.cacheMap == null || commonCacheJedisPool.cacheMap.size() <= 0) {
             for (CacheCodeEnum code : CacheCodeEnum.values()) {
-                CacheMyJedisPool.cacheMap.put(code.getValue(), code.getKey());
+                commonCacheJedisPool.cacheMap.put(code.getValue(), code.getKey());
             }
         }
         if (BaseValidUtil.isEmpty(commonCacheJedisPool.cacheMap) || BaseValidUtil.isNull(appName) || BaseValidUtil.isEmpty(commonCacheJedisPool.cacheMap.get(appName))) {
@@ -40,7 +48,8 @@ public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
 
     /** 获得jedis对象 */
     public Jedis getJedis() {
-        return commonCacheJedisPool.getInstance().getJedis();
+        commonCacheJedisPool.CommonCacheJedisPoolTest();
+        return commonCacheJedisPool.getJedis();
     }
 
     @Override
@@ -61,12 +70,12 @@ public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
     }
     /** 销毁jedis对象 */
     public void destoryJedisOjbect(Jedis jedis) {
-        CacheMyJedisPool.destoryJedisOjbect(jedis);
+        //commonCacheJedisPool.destoryJedisOjbect(jedis);
     }
     public void recycleJedisToPool(Jedis jedis) {
         if (jedis != null) {
             try {
-                CacheMyJedisPool.recycleJedisOjbect(jedis);
+                //commonCacheJedisPool.recycleJedisOjbect(jedis);
             } catch (Exception e) {
                 logger.error(e.getMessage(),e);
             }
@@ -76,26 +85,72 @@ public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
 
 
 
+    public int getJedisDatabaseIndex() {
+        return jedisDatabaseIndex;
+    }
+
+    public void setJedisDatabaseIndex(int jedisDatabaseIndex) {
+        this.jedisDatabaseIndex = jedisDatabaseIndex;
+    }
+
+
     @Override
     public String getString(String key) {
         return null;
     }
 
     @Override
-    public boolean add(String key, T value) {
-        return false;
-    }
+	public boolean add(String key, T object) {
+		boolean flag = false;
+		Jedis jedis = null;
+		if (BaseValidUtil.isNotNull(key) && object != null && !"[]".equals(object.toString())) {
+			try {
+				jedis = getJedis();
+				jedis.select(jedisDatabaseIndex);
+				String result = jedis.set(key.getBytes(), BaseSerializationUtil.serialize(object));
+				if (LOCK_SUCCESS.equals(result)) {
+					flag = true;
+				}
+			} catch (Exception e) {
+				logger.error("createCacheObject:key:" + key + "value:" + object + ",error:" + e);
+				destoryJedisOjbect(jedis);
+			} finally {
+				recycleJedisToPool(jedis);
+			}
+		}
 
-    @Override
-    public boolean add(String key, T value, Long overTime) {
-        return false;
-    }
+		return flag;
+	}
 
-    @Override
-    public boolean set(String key, T value) {
-        return false;
-    }
+	@Override
+	public boolean add(String key, T object, Long overTime) {
+        logger.info("===========================================================");
+		boolean flag = false;
+		Jedis jedis = null;
+		if (BaseValidUtil.isNotNull(key) && object != null && !"[]".equals(object.toString())) {
+			try {
+				jedis = getJedis();
+				jedis.select(jedisDatabaseIndex);
+				String result = jedis.set(key.getBytes(), BaseSerializationUtil.serialize(object));
+				jedis.expire(key.getBytes(),Integer.parseInt(overTime*60+""));
+				if (LOCK_SUCCESS.equals(result)) {
+					flag = true;
+				}
+			} catch (Exception e) {
+				logger.error("createCacheObject:key:" + key + "value:" + object + ",error:" + e);
+				destoryJedisOjbect(jedis);
+			} finally {
+				recycleJedisToPool(jedis);
+			}
+		}
 
+		return flag;
+	}
+
+	@Override
+	public boolean set(String key, T value) {
+		return add(key,value);
+	}
     @Override
     public boolean setNumber(String key, Long value) {
         return false;

@@ -18,6 +18,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public @interface CacheAspectAnnotation {
+
     /**
      * 操作类型
      * SELECT 查询操作

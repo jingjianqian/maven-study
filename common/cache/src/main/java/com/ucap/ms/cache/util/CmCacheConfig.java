@@ -2,26 +2,13 @@ package com.ucap.ms.cache.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.Serializable;
 
-/**
- * redis缓存相关配置
- * @time 2021-08-09
- * @author jjq
- */
-@Component
+@RestController
 @RefreshScope
-@Order(Ordered.LOWEST_PRECEDENCE - 1)
-public class CommonCacheConfig implements Serializable {
-
-    public CommonCacheConfig(){
-        System.out.println("CommonCacheConfig:"+this.getClass().getName());
-    }
+public class CmCacheConfig implements Serializable {
 
     @Value("${redis.config.cacheStrategy}")
     public  String cacheStrategy;
@@ -153,4 +140,5 @@ public class CommonCacheConfig implements Serializable {
     public void setRedisClusterName(String redisClusterName) {
         this.redisClusterName = redisClusterName;
     }
+
 }
