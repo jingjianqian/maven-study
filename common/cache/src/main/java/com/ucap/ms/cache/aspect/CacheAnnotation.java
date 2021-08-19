@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public @interface CacheAspectAnnotation {
+public @interface CacheAnnotation {
 
     /**
      * 操作类型
@@ -49,5 +49,5 @@ public @interface CacheAspectAnnotation {
     int expire() default 0;
 
     /**是否读取缓存开关*/
-    public final static String BOOLEAN_READ_REDIS = "_READ_REDIS";
+    public final static String FLAG_LOAD_SOURCE_DATA = "_loadSourceData";
 }

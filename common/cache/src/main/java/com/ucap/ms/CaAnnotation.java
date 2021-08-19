@@ -2,7 +2,6 @@ package com.ucap.ms;
 
 
 import com.ucap.ms.base.enums.CacheCodeEnum;
-import com.ucap.ms.cache.aspect.CacheAspectAnnotation;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 

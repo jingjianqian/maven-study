@@ -41,7 +41,7 @@ import java.lang.reflect.Method;
 @Order(Ordered.HIGHEST_PRECEDENCE - 2)
 public class CacheAspect {
     private final static Logger logger = LoggerFactory.getLogger(CacheAspect.class);
-    private final static String CACHE_ANNOTATION = CacheAspectAnnotation.class.getSimpleName();
+    private final static String CACHE_ANNOTATION = CacheAnnotation.class.getSimpleName();
     public  CacheAspect(){
         logger.info("CacheAspect Contructor:",this.getClass().getName());
     }
@@ -57,7 +57,7 @@ public class CacheAspect {
     /**
      * 切入点
      */
-    @Pointcut("@annotation(CacheAspectAnnotation) ")
+    @Pointcut("@annotation(CacheAnnotation) ")
     public void access(){
         logger.info("切入点声明！！！");
     }
@@ -71,13 +71,13 @@ public class CacheAspect {
      * redis 环绕通知AOP
      * @return
      */
-    @Around("access()&&@annotation(cacheAspectAnnotation)")
-    public Object execute(ProceedingJoinPoint proceedingJoinPoint, CacheAspectAnnotation cacheAspectAnnotation) throws Throwable {
+    @Around("access()&&@annotation(cacheAnnotation)")
+    public Object execute(ProceedingJoinPoint proceedingJoinPoint, CacheAnnotation cacheAnnotation) throws Throwable {
         logger.info("CacheAspect Around Starting");
         Object result = null;
         try {
             /** 缓存实例*/
-            String cacheInstanceName = cacheAspectAnnotation.cacheCode().getValue();
+            String cacheInstanceName = cacheAnnotation.cacheCode().getValue();
             logger.info("cmCacheConfig:", cmCacheConfig.getCacheStrategy());
             logger.info("cmCacheConfig:", cmCacheConfig.cacheStrategy);
             logger.info("commonCacheConfig:"+ commonCacheConfig.getCacheStrategy());
@@ -88,23 +88,28 @@ public class CacheAspect {
             Method method = getMethod(proceedingJoinPoint);
             // 参数
             Object[] args = proceedingJoinPoint.getArgs();
-
+            for(int i = 0 ;i<args.length;i++){
+                logger.info((String) args[i]);
+            }
             RequestAttributes ra = RequestContextHolder.getRequestAttributes();
             ServletRequestAttributes sra = (ServletRequestAttributes)ra;
             HttpServletRequest request = sra.getRequest();
 
-            String listKey = initKey(cacheAspectAnnotation, proceedingJoinPoint, method);
+            logger.info(request.getParameter(CacheAnnotation.FLAG_LOAD_SOURCE_DATA));
+
+            String listKey = initKey(cacheAnnotation, proceedingJoinPoint, method);
 
             if(BaseTools.checkEmpty(listKey)){
                 result = proceedingJoinPoint.proceed(args);
                 logger.info(CACHE_ANNOTATION + "-listKey is empty");
                 return result;
             }
-            listKey = CACHE_ANNOTATION + "_" + cacheAspectAnnotation.dataKey() + "_LIST_" + listKey;
-            switch (cacheAspectAnnotation.operation()) {
+            listKey = CACHE_ANNOTATION + "_" + cacheAnnotation.dataKey() + "_LIST_" + listKey;
+            switch (cacheAnnotation.operation()) {
                 case SELECT:
                     Object obj = commonCacheService.get(listKey);
-                    if (obj != null && (request == null || !"true".equals(request.getParameter(CacheAspectAnnotation.BOOLEAN_READ_REDIS)))) {
+                    logger.info(CacheAnnotation.FLAG_LOAD_SOURCE_DATA);
+                    if (obj != null && (request == null || !"true".equals(request.getParameter(CacheAnnotation.FLAG_LOAD_SOURCE_DATA)))) {
                         result = obj;
                         logger.info(CACHE_ANNOTATION + "-hit：listKey = " + listKey);
                     } else {
@@ -113,16 +118,16 @@ public class CacheAspect {
                         if (result instanceof ResultModel) {
                             ResultModel model = (ResultModel) result;
                             if (model.getCode() == GlobalBaseErrorCode.SUCCESS.getCode()) {
-                                if(cacheAspectAnnotation.expire() > 0) {
-                                    cacheResult = commonCacheService.add(listKey, result, (long)cacheAspectAnnotation.expire());
+                                if(cacheAnnotation.expire() > 0) {
+                                    cacheResult = commonCacheService.add(listKey, result, (long) cacheAnnotation.expire());
                                 } else {
                                     cacheResult = commonCacheService.set(listKey, result);
                                 }
                                 logger.info(CACHE_ANNOTATION + "-set：listKey = " + listKey
                                         + ",cacheResult = " + cacheResult);
                             }else{
-                                if(cacheAspectAnnotation.expire() > 0){
-                                    cacheResult = commonCacheService.add(listKey, result, (long)cacheAspectAnnotation.expire());
+                                if(cacheAnnotation.expire() > 0){
+                                    cacheResult = commonCacheService.add(listKey, result, (long) cacheAnnotation.expire());
                                 }else{
                                     cacheResult = commonCacheService.set(listKey, result);
                                 }
@@ -138,7 +143,7 @@ public class CacheAspect {
                         ResultModel ResultModel = (ResultModel) result;
                         if (ResultModel.getCode() == GlobalBaseErrorCode.SUCCESS.getCode()) {
                             // 清除对应查询缓存
-                            String dataKey = CACHE_ANNOTATION + "_" + cacheAspectAnnotation.dataKey() + "_LIST";
+                            String dataKey = CACHE_ANNOTATION + "_" + cacheAnnotation.dataKey() + "_LIST";
                             boolean cacheResult = commonCacheService.deleteByKeyPrefix(dataKey);
                             logger.info(CACHE_ANNOTATION + "-deleteByKeyPrefix：keyPrefix= " + dataKey
                                     + ",cacheResult = " + cacheResult);
@@ -174,14 +179,16 @@ public class CacheAspect {
     }
 
 
-    private String initKey(CacheAspectAnnotation cacheAspectAnnotation, ProceedingJoinPoint proceedingJoinPoint,
+    private String initKey(CacheAnnotation cacheAnnotation, ProceedingJoinPoint proceedingJoinPoint,
                            Method method) throws Throwable {
         Object[] args = proceedingJoinPoint.getArgs();
+        logger.info(String.valueOf(args));
         // 获取被拦截方法参数名列表(使用Spring支持类库)
         LocalVariableTableParameterNameDiscoverer u = new LocalVariableTableParameterNameDiscoverer();
         String[] paraNameArr = u.getParameterNames(method);
 
-        String paramKeyEl = cacheAspectAnnotation.paramsKeyEl();
+        String paramKeyEl = cacheAnnotation.paramsKeyEl();
+        logger.info(paramKeyEl);
         String key = "";
         if (!BaseTools.checkEmpty(paramKeyEl)) {
             // 使用SPEL进行key的解析
@@ -190,6 +197,7 @@ public class CacheAspect {
             StandardEvaluationContext context = new StandardEvaluationContext();
             // 把方法参数放入SPEL上下文中
             for (int i = 0; i < paraNameArr.length; i++) {
+                logger.info(paraNameArr[i], args[i]);
                 context.setVariable(paraNameArr[i], args[i]);
             }
             Object object = parser.parseExpression(paramKeyEl).getValue(context);

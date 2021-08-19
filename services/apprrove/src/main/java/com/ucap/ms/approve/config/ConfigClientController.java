@@ -44,7 +44,25 @@ public class ConfigClientController implements Serializable {
     @Value("${config.params.time_stamp}")
     private String TIME_STAMP;
 
+    //参数值
+    @Value("${config.param_values.dept_codes}")
+    private String DEPT_CODES;
 
+    public String getTIME_STAMP() {
+        return TIME_STAMP;
+    }
+
+    public void setTIME_STAMP(String TIME_STAMP) {
+        this.TIME_STAMP = TIME_STAMP;
+    }
+
+    public String getDEPT_CODES() {
+        return DEPT_CODES;
+    }
+
+    public void setDEPT_CODES(String DEPT_CODES) {
+        this.DEPT_CODES = DEPT_CODES;
+    }
 
     public String getKEY_AUDIT_ITEM_API_TOKEN() {
         return KEY_AUDIT_ITEM_API_TOKEN;
@@ -144,8 +162,12 @@ public class ConfigClientController implements Serializable {
                 ", CLIENT_SECRET='" + CLIENT_SECRET + '\'' +
                 ", CLIENT_SECRET_VALUE='" + CLIENT_SECRET_VALUE + '\'' +
                 ", ACCESS_TOKEN='" + ACCESS_TOKEN + '\'' +
+                ", KEY_AUDIT_ITEM_API_TOKEN='" + KEY_AUDIT_ITEM_API_TOKEN + '\'' +
                 ", GET_TOKEN_URL='" + GET_TOKEN_URL + '\'' +
                 ", GET_DEPTAUDITITEM_URL='" + GET_DEPTAUDITITEM_URL + '\'' +
+                ", DEPT_CODE='" + DEPT_CODE + '\'' +
+                ", TIME_STAMP='" + TIME_STAMP + '\'' +
+                ", DEPT_CODES='" + DEPT_CODES + '\'' +
                 '}';
     }
 

@@ -19,10 +19,6 @@ import java.io.Serializable;
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class CommonCacheConfig implements Serializable {
 
-    public CommonCacheConfig(){
-        System.out.println("CommonCacheConfig:"+this.getClass().getName());
-    }
-
     @Value("${redis.config.cacheStrategy}")
     public  String cacheStrategy;
     @Value("${redis.config.redisIp}")

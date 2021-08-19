@@ -2,15 +2,26 @@ package com.ucap.ms.approve.api.vo;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.ucap.ms.approve.api.payload.RequestAuditItemPayload;
+import com.ucap.ms.approve.api.payload.RequestTaskItemPayload;
 import com.ucap.ms.approve.config.ConfigClientController;
+import com.ucap.ms.approve.exception.RequestInferfaceException;
 import com.ucap.ms.base.enums.CacheCodeEnum;
 import com.ucap.ms.cache.util.CommonCacheUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class ApproveAuditItemApi {
@@ -19,57 +30,13 @@ public class ApproveAuditItemApi {
 
 
     @Resource
-    private ConfigClientController configClientController;
-
-
-    @Resource
     ApproveAuditItemsSourceApi approveAuditItemsSourceApi;
 
+    @Resource
+    ConfigClientController configClientController;
 
     @Resource
-    RestTemplate restTemplate;
-
-    @Resource
-    private CommonCacheUtil commonCacheUtil;
-
-    /**
-     * 获取accessToken
-     * @return
-     * @param refreshToken
-     */
-    public String getAccessToken(Boolean refreshToken){
-        try {
-            if(!Boolean.TRUE.equals(refreshToken)){
-                String accessToken  = (String) commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get(configClientController.getKEY_AUDIT_ITEM_API_TOKEN());
-                if(accessToken !=null){
-                    return accessToken;
-                }
-            }
-//            Map<String, Object> map = requestParamsDept(accessToken, deptCode, timestamp);
-//            //String accessToken  = (String) CommonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get(KEY_AUDIT_ITEM_API_TOKEN);
-//            MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
-//            postParameters.add(GRANT_TYPE, GRANT_TYPE_VALUE);
-//            postParameters.add(CLIENT_ID, CLIENT_ID_VALUE);
-//            postParameters.add(CLIENT_SECRET, CLIENT_SECRET_VALUE);
-//
-//            RequestEntity<Map<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_DEPTAUDITITEM_URL()).toURI())
-//                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-//                    .accept(MediaType.APPLICATION_JSON_UTF8)
-//                    .body(map);
-//
-//            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
-
-            return configClientController.toString();
-
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            return "{'status':'11111'}";
-        }
-    }
+    private RestTemplate restTemplate;
 
 
 
@@ -93,7 +60,7 @@ public class ApproveAuditItemApi {
         int resultSize = list.size();
         log.info("getAuditItemsDeptLimit-deptCode:" + deptCode
                 + ",timestamp:" + timestamp + ",num:" + num);
-        while (resultSize == 100 && !timestamp.equals(timestampRe)) {
+        while (resultSize == 30 && !timestamp.equals(timestampRe)) {
             log.info("getAuditItemsDeptLimit-deptCode:" + deptCode + ",timestamp:" + timestamp + ",timestampRe:" + timestampRe);
             timestamp = timestampRe;
             if(timestamp!=0) {
@@ -127,7 +94,6 @@ public class ApproveAuditItemApi {
 
             num += numRe;
             resultSize = listRe.size();
-            //这个部分要优化 不知道是那个智障写的
             list.addAll(listRe);
         }
         data.put("RETURNITEMSUNNUM", num);
@@ -135,6 +101,113 @@ public class ApproveAuditItemApi {
         return  returnJson;
     }
 
+
+
+    /**
+     * 获取事项列表（含业务办理项编码条件过滤）
+     * @return
+     */
+    public RequestAuditItemPayload getAuditItemsByYwcode(String itemCode, String ywcode) {
+        try {
+            String accessToken = approveAuditItemsSourceApi.getAccessToken(null);
+            if(accessToken == null){
+                throw new RequestInferfaceException("获取 access token 失败");
+            }
+            Map<String, Object> map = requestParams(accessToken, itemCode);
+            RequestEntity<Map<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_DEPTAUDITITEM_URL()/**GET_AREAAUDITITEM_URL***/).toURI())
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .body(map);
+            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
+            RequestTaskItemPayload taskPayload = JSONObject.parseObject(exchange.getBody(), RequestTaskItemPayload.class);
+            RequestAuditItemPayload payload = new RequestAuditItemPayload();
+            payload.setCustom(taskPayload.getData().getCustomBean(ywcode));
+            payload.setStatus(taskPayload.getSTATUS().getStatusBean());
+            if(!payload.isOk()){
+                throw new RequestInferfaceException(payload.getStatus().getText());
+            }
+            return payload;
+        } catch (HttpClientErrorException e) {
+            if("403 Forbidden".equals(e.getMessage())){
+                approveAuditItemsSourceApi.getAccessToken(true);
+            }else {
+                throw e;
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }
+        return null;
+    }
+
+
+
+
+
+    private static Map<String, Object> commonAreaRequestParams(String accessToken, String catalogCode,
+                                                               String taskCode,String deptCode,String serve, String theme, String isHistory) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token",accessToken);
+        Map<String, Object> sub = new HashMap<>();
+        sub.put("AREA_CODE","450721");
+        sub.put("CATALOG_CODE",catalogCode);
+        sub.put("TASK_CODE",taskCode);
+        sub.put("DEPT_CODE",deptCode);
+        sub.put("SERVE", serve);
+        sub.put("THEME", theme);
+        sub.put("IS_HISTORY", isHistory);
+        map.put("param",sub);
+        return map;
+    }
+
+    private static Map<String, Object> requestParams(String accessToken,
+                                                     String itemCode) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token",accessToken);
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("AREA_CODE","450721");
+        String[] split = itemCode.split(",");
+        if(split.length<3){
+            throw new RequestInferfaceException("itemCode 格式出错");
+        }
+        map1.put("CATALOG_CODE",split[0]);
+        map1.put("TASK_CODE",split[1]);
+        map1.put("DEPT_CODE", split[2]);
+        //map.put(FROM_TIMESTAMP,"0");
+        // map.put(ITEM_LIMIT,"99");
+        //map1.put("SERVE", "1");
+        //map1.put("THEME", "005");
+        map1.put("IS_HISTORY", "0");
+        map.put("param",map1);
+        return map;
+    }
+
+    private static Map<String, Object> requestParams(String accessToken, String serve, String theme, Long timestamp) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token",accessToken);
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("AREA_CODE","AREA_CODE_VALUE");
+        if(timestamp != null) map1.put("TIME_STAMP",timestamp);
+        map1.put("TASK_STATE","1");
+        map1.put("ITEM_LIMIT",100);
+        if(!StringUtils.isEmpty(serve) && !StringUtils.isEmpty(theme)){
+            map1.put("SERVE", serve);
+            map1.put("THEME", theme);
+        }
+        map1.put("IS_HISTORY", "0");
+        map.put("param",map1);
+        return map;
+    }
+    private static Map<String, Object> requestParamsDept(String accessToken, String deptCode, Long timestamp) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token",accessToken);
+        Map<String, Object> param = new HashMap<>();
+        param.put("DEPT_CODE", deptCode);
+        if(timestamp != null) param.put("TIME_STAMP",timestamp);
+        //map.put(ITEM_LIMIT,999);//
+        param.put("ITEM_LIMIT",30);//2020-12-31 新接口最大只能100
+        map.put("param",param);
+        return map;
+    }
 
 
 

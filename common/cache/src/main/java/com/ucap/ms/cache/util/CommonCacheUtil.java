@@ -21,9 +21,6 @@ public class CommonCacheUtil {
     private CommonCacheSingleRedisSer commonCacheSingleRedisSer;
 
 
-    public CommonCacheUtil(){
-        logger.info("CommonCacheUtil contructor" +this.getClass().getName());
-    }
 
     private   Logger logger = Logger.getLogger(CommonCacheUtil.class);
     private   Map<String, CommonCacheService> serviceMap = new ConcurrentHashMap<String, CommonCacheService>();

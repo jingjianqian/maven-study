@@ -22,10 +22,6 @@ public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
     private CommonCacheJedisPool commonCacheJedisPool;
 
 
-    public CommonCacheSingleRedisSer(){
-        logger.info("CommonCacheSingleRedisSer Contructor:"+this.getClass().getName());
-    }
-
     private int jedisDatabaseIndex;
     private  Logger logger = Logger.getLogger(CommonCacheSingleRedisSer.class);
     private static final String LOCK_SUCCESS = "OK";

@@ -2,7 +2,7 @@ package com.ucap.ms.approve.aspect;
 
 
 import com.ucap.ms.base.enums.CacheCodeEnum;
-import com.ucap.ms.cache.aspect.CacheAspectAnnotation;
+import com.ucap.ms.cache.aspect.CacheAnnotation;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
@@ -26,7 +26,7 @@ public @interface MyAnnotation {
     }
 
     /** 操作类型 */
-    CacheAspectAnnotation.OPERATIONS operation() default CacheAspectAnnotation.OPERATIONS.SELECT;
+    CacheAnnotation.OPERATIONS operation() default CacheAnnotation.OPERATIONS.SELECT;
     /**数据对象key*/
     String dataKey();
 

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.ucap.ms.approve.api.payload.RequestTokenPayload;
 import com.ucap.ms.approve.config.ConfigClientController;
 import com.ucap.ms.approve.exception.RequestInferfaceException;
+import com.ucap.ms.base.enums.CacheCodeEnum;
+import com.ucap.ms.cache.util.CommonCacheUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 接口对接
+ */
 @Component
 public class ApproveAuditItemsSourceApi {
 
@@ -24,10 +29,12 @@ public class ApproveAuditItemsSourceApi {
     public  ConfigClientController configClientController;
     @Resource
     public   RestTemplate restTemplate;
+    @Resource
+    public CommonCacheUtil commonCacheUtil;
 
     public  JSONObject getAuditItemsDeptLimit(String dept_code,Long timestamp){
         try {
-            String accessToken = getAccessToken();
+            String accessToken = getAccessToken(null);
             if(accessToken == null){
                 throw new RequestInferfaceException("获取 access token 失败");
             }
@@ -46,9 +53,15 @@ public class ApproveAuditItemsSourceApi {
         return null;
     }
 
-    public  String getAccessToken(){
+    public  String getAccessToken(Boolean refreshToken){
         String access_token = null;
         try{
+            if(!Boolean.TRUE.equals(refreshToken)){
+                String apiToken = (String) commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get("audit_item_api_token");
+                if (apiToken != null) {
+                    return apiToken;
+                }
+            }
             MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
             postParameters.add(configClientController.getGRANT_TYPE(), configClientController.getGRANT_TYPE_VALUE());
             postParameters.add(configClientController.getCLIENT_ID(), configClientController.getCLIENT_ID_VALUE());
