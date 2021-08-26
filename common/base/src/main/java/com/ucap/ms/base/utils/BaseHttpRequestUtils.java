@@ -1,5 +1,6 @@
 package com.ucap.ms.base.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Splitter;
 import com.ucap.ms.base.data.RestResultBuilder;
 import org.apache.http.Consts;
@@ -34,7 +35,7 @@ public class BaseHttpRequestUtils {
 	/**
 	 * 读取数据超时
 	 */
-	private static int readTimeOut = 500000;
+	private static int readTimeOut = 15000;
 
 	/**
 	 * 请求编码
@@ -539,6 +540,8 @@ public class BaseHttpRequestUtils {
 					jsonBody += ",\"" + params.get(i).getName() + "\":\"" + value + "\"";
 				}
 				if(jsonBody.length() > 0) jsonBody = "{" + jsonBody.substring(1) + "}";
+
+				System.out.println("jsonBody:" + jsonBody);
 				httpPost.setEntity(new StringEntity(jsonBody, Consts.UTF_8));
 				response = httpClient.execute(httpPost);
 			}
@@ -561,6 +564,50 @@ public class BaseHttpRequestUtils {
 				httpGet.setConfig(REQUEST_CONFIG);
 				response = httpClient.execute(httpGet);
 			}
+			if(response != null) {
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					return EntityUtils.toString(entity, Consts.UTF_8);
+				}
+			}
+			return RestResultBuilder.builder().failure().build().toString();
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			return RestResultBuilder.builder().failure().build().toString();
+		} finally{
+			try {
+				if(response != null) response.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(),e);
+			}
+			try {
+				if(httpClient != null) httpClient.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(),e);
+			}
+		}
+	}
+
+	/**
+	 * 发送请求
+	 * @param method    请求类型：POST/GET
+	 * @param url       请求地址
+	 * @param paramMap  请求参数
+	 * @return 响应返回内容
+	 */
+	public static String sendPostWithJson(String url,Map<String,Object> paramMap) {
+		CloseableHttpClient httpClient = HttpClients.createDefault();
+		CloseableHttpResponse response = null;
+
+		try{
+			HttpPost httpPost = new HttpPost(url);
+			httpPost.setConfig(REQUEST_CONFIG);
+			httpPost.setHeader("Content-Type", "application/json");
+			JSONObject jsonBody=new JSONObject(paramMap);
+			System.out.println("jsonBody:" + jsonBody);
+			httpPost.setEntity(new StringEntity(String.valueOf(jsonBody), Consts.UTF_8));
+			response = httpClient.execute(httpPost);
 			if(response != null) {
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {

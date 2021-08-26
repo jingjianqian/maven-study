@@ -42,9 +42,7 @@ import java.lang.reflect.Method;
 public class CacheAspect {
     private final static Logger logger = LoggerFactory.getLogger(CacheAspect.class);
     private final static String CACHE_ANNOTATION = CacheAnnotation.class.getSimpleName();
-    public  CacheAspect(){
-        logger.info("CacheAspect Contructor:",this.getClass().getName());
-    }
+
     @Resource
     private CommonCacheConfig commonCacheConfig;
 
@@ -59,13 +57,13 @@ public class CacheAspect {
      */
     @Pointcut("@annotation(CacheAnnotation) ")
     public void access(){
-        logger.info("切入点声明！！！");
+
     }
 
 
     @Before("access()")
     public void before(JoinPoint joinPoint){
-        logger.info("before from aop");
+
     }
     /**
      * redis 环绕通知AOP
@@ -73,29 +71,21 @@ public class CacheAspect {
      */
     @Around("access()&&@annotation(cacheAnnotation)")
     public Object execute(ProceedingJoinPoint proceedingJoinPoint, CacheAnnotation cacheAnnotation) throws Throwable {
-        logger.info("CacheAspect Around Starting");
         Object result = null;
         try {
             /** 缓存实例*/
             String cacheInstanceName = cacheAnnotation.cacheCode().getValue();
-            logger.info("cmCacheConfig:", cmCacheConfig.getCacheStrategy());
-            logger.info("cmCacheConfig:", cmCacheConfig.cacheStrategy);
-            logger.info("commonCacheConfig:"+ commonCacheConfig.getCacheStrategy());
-            logger.info("commonCacheConfig:"+ commonCacheConfig.cacheStrategy);
+
             /** 获取缓存服务 **/
             CommonCacheService<Object> commonCacheService = commonCacheUtil.getCache(cacheInstanceName);
             /** 方法对象 **/
             Method method = getMethod(proceedingJoinPoint);
             // 参数
             Object[] args = proceedingJoinPoint.getArgs();
-            for(int i = 0 ;i<args.length;i++){
-                logger.info((String) args[i]);
-            }
+
             RequestAttributes ra = RequestContextHolder.getRequestAttributes();
             ServletRequestAttributes sra = (ServletRequestAttributes)ra;
             HttpServletRequest request = sra.getRequest();
-
-            logger.info(request.getParameter(CacheAnnotation.FLAG_LOAD_SOURCE_DATA));
 
             String listKey = initKey(cacheAnnotation, proceedingJoinPoint, method);
 
@@ -108,7 +98,6 @@ public class CacheAspect {
             switch (cacheAnnotation.operation()) {
                 case SELECT:
                     Object obj = commonCacheService.get(listKey);
-                    logger.info(CacheAnnotation.FLAG_LOAD_SOURCE_DATA);
                     if (obj != null && (request == null || !"true".equals(request.getParameter(CacheAnnotation.FLAG_LOAD_SOURCE_DATA)))) {
                         result = obj;
                         logger.info(CACHE_ANNOTATION + "-hit：listKey = " + listKey);
@@ -166,7 +155,7 @@ public class CacheAspect {
 
     @After("access()")
     public void after(JoinPoint joinPoint){
-        logger.info("after method from aop");
+
     }
 
 
@@ -182,13 +171,11 @@ public class CacheAspect {
     private String initKey(CacheAnnotation cacheAnnotation, ProceedingJoinPoint proceedingJoinPoint,
                            Method method) throws Throwable {
         Object[] args = proceedingJoinPoint.getArgs();
-        logger.info(String.valueOf(args));
         // 获取被拦截方法参数名列表(使用Spring支持类库)
         LocalVariableTableParameterNameDiscoverer u = new LocalVariableTableParameterNameDiscoverer();
         String[] paraNameArr = u.getParameterNames(method);
 
         String paramKeyEl = cacheAnnotation.paramsKeyEl();
-        logger.info(paramKeyEl);
         String key = "";
         if (!BaseTools.checkEmpty(paramKeyEl)) {
             // 使用SPEL进行key的解析
@@ -197,7 +184,6 @@ public class CacheAspect {
             StandardEvaluationContext context = new StandardEvaluationContext();
             // 把方法参数放入SPEL上下文中
             for (int i = 0; i < paraNameArr.length; i++) {
-                logger.info(paraNameArr[i], args[i]);
                 context.setVariable(paraNameArr[i], args[i]);
             }
             Object object = parser.parseExpression(paramKeyEl).getValue(context);

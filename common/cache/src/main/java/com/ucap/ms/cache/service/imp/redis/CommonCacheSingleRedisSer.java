@@ -113,14 +113,16 @@ public class CommonCacheSingleRedisSer<T>  implements CommonCacheService<T> {
 			} finally {
 				recycleJedisToPool(jedis);
 			}
-		}
+		}else{
+		    logger.error("不满足条件");
+        }
 
 		return flag;
 	}
 
 	@Override
 	public boolean add(String key, T object, Long overTime) {
-        logger.info("===========================================================");
+
 		boolean flag = false;
 		Jedis jedis = null;
 		if (BaseValidUtil.isNotNull(key) && object != null && !"[]".equals(object.toString())) {

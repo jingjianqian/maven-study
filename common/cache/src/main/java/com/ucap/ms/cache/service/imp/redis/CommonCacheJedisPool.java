@@ -41,7 +41,6 @@ public class CommonCacheJedisPool {
     private  Pool pool;
     /** 构造方法 **/
     public void  CommonCacheJedisPoolTest(){
-        log.info("CommonCacheJedisPool contructor:",this.getClass().getName());
         try {
             String redisAddress= commonCacheConfig.getRedisIp();
             //分号分割代表多个 ; 此处采用哨兵redis主从模式

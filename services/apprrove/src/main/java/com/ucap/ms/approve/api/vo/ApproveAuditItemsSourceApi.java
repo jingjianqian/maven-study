@@ -5,7 +5,10 @@ import com.ucap.ms.approve.api.payload.RequestTokenPayload;
 import com.ucap.ms.approve.config.ConfigClientController;
 import com.ucap.ms.approve.exception.RequestInferfaceException;
 import com.ucap.ms.base.enums.CacheCodeEnum;
+import com.ucap.ms.base.utils.BaseHttpRequestUtils;
 import com.ucap.ms.cache.util.CommonCacheUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -32,20 +35,34 @@ public class ApproveAuditItemsSourceApi {
     @Resource
     public CommonCacheUtil commonCacheUtil;
 
+
+    private static final Logger logger = LoggerFactory.getLogger(ApproveAuditItemsSourceApi.class);
+
+
     public  JSONObject getAuditItemsDeptLimit(String dept_code,Long timestamp){
         try {
             String accessToken = getAccessToken(null);
             if(accessToken == null){
                 throw new RequestInferfaceException("获取 access token 失败");
+
             }
+
             Map<String, Object> map = requestParamsDept(accessToken, dept_code, timestamp);
 
-            RequestEntity<Map<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_DEPTAUDITITEM_URL()).toURI())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
-                    .body(map);
-            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
-            JSONObject jsonObject = JSONObject.parseObject(exchange.getBody());
+            Map<String,Object> httpClientParamMap = new HashMap<String,Object>();
+            Map<String,Object> paramMap = new HashMap<String,Object>();
+            httpClientParamMap.put("access_token", accessToken);
+            paramMap.put("DEPT_CODE", dept_code);
+            paramMap.put("ITEM_LIMIT",50);
+            paramMap.put("TIME_STAMP",timestamp);
+            paramMap.put("TASK_STATE","1");
+            paramMap.put("IS_HISTORY", "0");
+            paramMap.put("TASK_TYPE", "01,04,05,07,08,09,10,20");
+            httpClientParamMap.put("param",paramMap);
+
+            String resultMsg = BaseHttpRequestUtils.sendPostWithJson(configClientController.getGET_DEPTAUDITITEM_URL(), httpClientParamMap);
+            JSONObject jsonObject = JSONObject.parseObject(resultMsg);
+
             return jsonObject;
         }catch (Exception e){
             e.printStackTrace();
@@ -76,7 +93,7 @@ public class ApproveAuditItemsSourceApi {
                 throw new RequestInferfaceException(payload.getStatus().getText());
             }
             access_token = payload.getCustom().getAccessToken();
-            //CommonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).add(configClientController.getKEY_AUDIT_ITEM_API_TOKEN(), access_token, 20L);
+            commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).add(configClientController.getKEY_AUDIT_ITEM_API_TOKEN(), access_token, 20L);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -93,9 +110,25 @@ public class ApproveAuditItemsSourceApi {
         if(timestamp != null){
             param.put("TIME_STAMP",timestamp);
         }
-        param.put("ITEM_LIMIT",30);//2020-12-31 新接口最大只能100
+        param.put("ITEM_LIMIT",50);//2020-12-31 新接口最大只能100
         param.put("IS_HISTORY", "0");
         map.put("param",param);
+        return map;
+    }
+
+
+    private  Map<String, String> requestParamsDeptT(String accessToken, String deptCode, Long timestamp) {
+        Map<String, String> map = new HashMap<>();
+
+        map.put(configClientController.getACCESS_TOKEN(),accessToken);
+        Map<String, Object> param = new HashMap<>();
+        param.put(configClientController.getDEPT_CODE(), deptCode);
+        if(timestamp != null){
+            param.put("TIME_STAMP",timestamp.toString());
+        }
+        param.put("ITEM_LIMIT",30);//2020-12-31 新接口最大只能100
+        param.put("IS_HISTORY", "0");
+        map.put("param",param.toString());
         return map;
     }
 }

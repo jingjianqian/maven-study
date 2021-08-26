@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.ucap.ms.approve.api.payload.RequestAuditItemPayload;
 import com.ucap.ms.approve.api.payload.RequestTaskItemPayload;
 import com.ucap.ms.approve.config.ConfigClientController;
+import com.ucap.ms.approve.controller.ApproveStemItemController;
 import com.ucap.ms.approve.exception.RequestInferfaceException;
 import com.ucap.ms.base.enums.CacheCodeEnum;
 import com.ucap.ms.cache.util.CommonCacheUtil;
@@ -38,6 +39,8 @@ public class ApproveAuditItemApi {
     @Resource
     private RestTemplate restTemplate;
 
+    private static final Logger logger = LoggerFactory.getLogger(ApproveAuditItemApi.class);
+
 
 
     public JSONObject getAuditItemsLimit(String deptCode){
@@ -51,27 +54,23 @@ public class ApproveAuditItemApi {
         }
         Long num = data.getLong("RETURNITEMSUNNUM");
         Long timestamp = data.getLong("LASTTIMESTAMP");
-        Long timestampRe = 0L;
         JSONObject jsonRe =null;
         JSONArray list = data.getJSONArray("list");
         if(timestamp == null || list == null) {
             return returnJson;
         }
-        int resultSize = list.size();
-        log.info("getAuditItemsDeptLimit-deptCode:" + deptCode
-                + ",timestamp:" + timestamp + ",num:" + num);
-        while (resultSize == 30 && !timestamp.equals(timestampRe)) {
-            log.info("getAuditItemsDeptLimit-deptCode:" + deptCode + ",timestamp:" + timestamp + ",timestampRe:" + timestampRe);
-            timestamp = timestampRe;
-            if(timestamp!=0) {
-                jsonRe = approveAuditItemsSourceApi.getAuditItemsDeptLimit(deptCode, timestamp);
-            }else{
-                jsonRe = approveAuditItemsSourceApi.getAuditItemsDeptLimit(deptCode, data.getLong("LASTTIMESTAMP"));
-            }
-            if(timestamp!=0) {
-                jsonRe = approveAuditItemsSourceApi.getAuditItemsDeptLimit(deptCode, timestamp);
-            }else{
-                jsonRe = approveAuditItemsSourceApi.getAuditItemsDeptLimit(deptCode, data.getLong("LASTTIMESTAMP"));
+        log.info("getAuditItemsDeptLimit-deptCode:" + deptCode + ",timestamp:" + timestamp + ",num:" + num);
+
+
+        int status_code = returnJson.getJSONObject("STATUS").getInteger("CODE");
+        while(status_code == 0){
+            jsonRe = approveAuditItemsSourceApi.getAuditItemsDeptLimit(deptCode, timestamp);
+
+            timestamp = jsonRe.getJSONObject("data").getLong("LASTTIMESTAMP");
+            logger.info(String.valueOf(timestamp));
+            status_code = jsonRe.getJSONObject("STATUS").getInteger("CODE");
+            if(status_code != 0){
+                break;
             }
             if(jsonRe == null) {
                 log.warn("getAuditItemsDeptLimit-deptCode:" + deptCode + ",jsonRe is null");
@@ -83,19 +82,16 @@ public class ApproveAuditItemApi {
                 break;
             }
             Long numRe = dataRe.getLong("RETURNITEMSUNNUM");
-            timestampRe = dataRe.getLong("LASTTIMESTAMP");
+
             JSONArray listRe = dataRe.getJSONArray("list");
-            if(timestampRe == null || listRe == null) {
-                log.warn("getAuditItemsDeptLimit-deptCode:" + deptCode + ",timestampRe:" + timestampRe + " or listRe is null");
-                break;
-            }
+
 
             log.info("getAuditItemsDeptLimit-deptCode:" + deptCode + ",num:" + num + ",numRe:" + numRe);
 
             num += numRe;
-            resultSize = listRe.size();
             list.addAll(listRe);
         }
+
         data.put("RETURNITEMSUNNUM", num);
 
         return  returnJson;
