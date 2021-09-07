@@ -55,9 +55,12 @@ public class ApproveAuditItemsSourceApi {
             paramMap.put("DEPT_CODE", dept_code);
             paramMap.put("ITEM_LIMIT",50);
             paramMap.put("TIME_STAMP",timestamp);
-            paramMap.put("TASK_STATE","1");
-            paramMap.put("IS_HISTORY", "0");
-            paramMap.put("TASK_TYPE", "01,04,05,07,08,09,10,20");
+            paramMap.put("TASK_STATE","1"); // 状态 - 1 在用 2 暂停 3 取消
+            paramMap.put("IS_HISTORY", "0"); // 1-获取历史版本 0-获取最新版本
+            // 01 行政许可  02 行政处罚 03 行政强制 04 行政征收
+            // 05 行政给付 06 行政检查 07 行政确认 08 行政奖励
+            // 09 行政裁决  10 其他行政权力  20 公共服务
+            paramMap.put("TASK_TYPE", "01,05,07,08,09,10,20");
             httpClientParamMap.put("param",paramMap);
 
             String resultMsg = BaseHttpRequestUtils.sendPostWithJson(configClientController.getGET_DEPTAUDITITEM_URL(), httpClientParamMap);

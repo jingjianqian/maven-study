@@ -12,12 +12,7 @@
     <groupId>top.jingjianqian.common.cache</groupId>
     <artifactId>cache</artifactId>
 
-
-
     <dependencies>
-
-
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
