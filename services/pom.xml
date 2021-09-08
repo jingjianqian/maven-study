@@ -50,12 +50,6 @@
             <groupId>com.ucap.ms</groupId>
             <artifactId>platform-base</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>com.alibaba</artifactId>
-                    <groupId>fastjson</groupId>
-                </exclusion>
-            </exclusions>
             <scope>compile</scope>
         </dependency>
 

@@ -1,6 +1,7 @@
 server:
   port: 9108
 
+
 spring:
   application:
     name: inner-web
@@ -14,25 +15,9 @@ spring:
         server-addr: 39.104.205.172:8848
         file-extension: yaml
         encode: UTF-8
-    loadbalancer:
-      ribbon:
-        enabled: false
+  main:
+    allow-bean-definition-overriding: true
 
-
-  datasource:
-    url: jdbc:mysql://39.104.205.172:3306/erupt?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-    username: root
-    password: Jing.jianqian2334
-  jpa:
-    show-sql: true
-    generate-ddl: true
-    open-in-view: true
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-    database: mysql
-  devtools:
-    restart:
-      additional-paths: = inner-web/src/main
-      enabled: false
 #spring.devtools.restart.additional-paths=*/src/main
 #spring.devtools.restart.enabled=false
 #${spring-application-name}-${spring.profiles.active}.${spring.cloud.nacos.config.extension}

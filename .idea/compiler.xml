@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="bkmanagement" />
+        <module name="cache" />
         <module name="apprrove" />
         <module name="base" />
         <module name="inner-web" />
-        <module name="cache" />
+        <module name="bkmanagement" />
       </profile>
     </annotationProcessing>
   </component>

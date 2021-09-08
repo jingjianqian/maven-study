@@ -1,14 +1,16 @@
 package top.jingjianqian.webService.innerWeb;
 
 
+import com.ucap.ms.base.data.ResultModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
-
+import top.jingjianqian.webService.innerWeb.openfeign.MyClient;
 
 
 @SpringBootApplication
@@ -20,7 +22,7 @@ public class InnerWebServer {
 
 
     @Autowired
-    HelloClient clients;
+    MyClient myClient;
 
     public static void main(String[] args) {
         SpringApplication.run(InnerWebServer.class,args);
@@ -28,15 +30,17 @@ public class InnerWebServer {
 
 
 
-    @FeignClient(name = "platform-approve")
+
+    @Component
+    @FeignClient(value = "platform-approve")
     interface HelloClient {
         @PostMapping(value = "/approveStepItem/auditItemsNotifyDept")
         String auditItemsNotifyDept(@RequestParam("deptCode") String deptCode);
     }
 
     @RequestMapping("/approveStepItem/auditItemsNotifyDept")
-    public String auditItemsNotifyDept(String deptCode) {
-        return clients.auditItemsNotifyDept(deptCode);
+    public ResultModel auditItemsNotifyDept(String deptCode) {
+        return myClient.one(deptCode);
     }
 
 
@@ -45,14 +49,4 @@ public class InnerWebServer {
         return "1";
     }
 
-
-
-
-
-
-//
-//    @RequestMapping("/test")
-//    public ResultModel one(String deptCode){
-//        return client.one(deptCode);
-//    }
 }
