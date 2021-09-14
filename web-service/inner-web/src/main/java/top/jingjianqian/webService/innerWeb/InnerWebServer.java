@@ -32,15 +32,15 @@ public class InnerWebServer {
 
 
     @Component
-    @FeignClient(value = "platform-approve")
+    @FeignClient(value = "TEST")
     interface HelloClient {
         @PostMapping(value = "/approveStepItem/auditItemsNotifyDept")
         String auditItemsNotifyDept(@RequestParam("deptCode") String deptCode);
     }
 
     @RequestMapping("/approveStepItem/auditItemsNotifyDept")
-    public ResultModel auditItemsNotifyDept(String deptCode) {
-        return myClient.one(deptCode);
+    public ResultModel auditItemsNotifyDept() {
+        return myClient.one();
     }
 
 

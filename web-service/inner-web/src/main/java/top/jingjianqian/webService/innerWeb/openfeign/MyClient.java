@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Component
-@FeignClient(name = "platform-approve" ,url = "platform-approve")
+@FeignClient(name = "TEST" ,url = "TEST")
 public interface MyClient {
     @RequestMapping(value = "/approveStepItem/auditItemsNotifyDept", method = RequestMethod.POST)
-    ResultModel one(String deptCode);
+    ResultModel one();
 }
