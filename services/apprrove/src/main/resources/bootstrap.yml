@@ -4,7 +4,7 @@ server:
 
 spring:
   application:
-    name: platform-approve
+    name: PLATFORM-APPROVE
   profiles:
     active: dev
   cloud:

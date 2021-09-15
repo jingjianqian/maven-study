@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+
 
 import javax.annotation.Resource;
 import java.net.URL;
@@ -36,8 +36,7 @@ public class ApproveAuditItemApi {
     @Resource
     ConfigClientController configClientController;
 
-    @Resource
-    private RestTemplate restTemplate;
+
 
     private static final Logger logger = LoggerFactory.getLogger(ApproveAuditItemApi.class);
 
@@ -104,34 +103,34 @@ public class ApproveAuditItemApi {
      * @return
      */
     public RequestAuditItemPayload getAuditItemsByYwcode(String itemCode, String ywcode) {
-        try {
-            String accessToken = approveAuditItemsSourceApi.getAccessToken(null);
-            if(accessToken == null){
-                throw new RequestInferfaceException("获取 access token 失败");
-            }
-            Map<String, Object> map = requestParams(accessToken, itemCode);
-            RequestEntity<Map<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_DEPTAUDITITEM_URL()/**GET_AREAAUDITITEM_URL***/).toURI())
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
-                    .body(map);
-            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
-            RequestTaskItemPayload taskPayload = JSONObject.parseObject(exchange.getBody(), RequestTaskItemPayload.class);
-            RequestAuditItemPayload payload = new RequestAuditItemPayload();
-            payload.setCustom(taskPayload.getData().getCustomBean(ywcode));
-            payload.setStatus(taskPayload.getSTATUS().getStatusBean());
-            if(!payload.isOk()){
-                throw new RequestInferfaceException(payload.getStatus().getText());
-            }
-            return payload;
-        } catch (HttpClientErrorException e) {
-            if("403 Forbidden".equals(e.getMessage())){
-                approveAuditItemsSourceApi.getAccessToken(true);
-            }else {
-                throw e;
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }
+//        try {
+//            String accessToken = approveAuditItemsSourceApi.getAccessToken(null);
+//            if(accessToken == null){
+//                throw new RequestInferfaceException("获取 access token 失败");
+//            }
+//            Map<String, Object> map = requestParams(accessToken, itemCode);
+//            RequestEntity<Map<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_DEPTAUDITITEM_URL()/**GET_AREAAUDITITEM_URL***/).toURI())
+//                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                    .accept(MediaType.APPLICATION_JSON_UTF8)
+//                    .body(map);
+//            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
+//            RequestTaskItemPayload taskPayload = JSONObject.parseObject(exchange.getBody(), RequestTaskItemPayload.class);
+//            RequestAuditItemPayload payload = new RequestAuditItemPayload();
+//            payload.setCustom(taskPayload.getData().getCustomBean(ywcode));
+//            payload.setStatus(taskPayload.getSTATUS().getStatusBean());
+//            if(!payload.isOk()){
+//                throw new RequestInferfaceException(payload.getStatus().getText());
+//            }
+//            return payload;
+//        } catch (HttpClientErrorException e) {
+//            if("403 Forbidden".equals(e.getMessage())){
+//                approveAuditItemsSourceApi.getAccessToken(true);
+//            }else {
+//                throw e;
+//            }
+//        } catch (Exception e) {
+//            log.error(e.getMessage(),e);
+//        }
         return null;
     }
 

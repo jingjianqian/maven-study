@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import top.jingjianqian.webService.innerWeb.openfeign.MyClient;
 
+import javax.annotation.Resource;
+
 
 @SpringBootApplication
 @EnableFeignClients
@@ -21,7 +23,7 @@ public class InnerWebServer {
 
 
 
-    @Autowired
+    @Resource
     MyClient myClient;
 
     public static void main(String[] args) {
@@ -31,8 +33,9 @@ public class InnerWebServer {
 
 
 
+
     @Component
-    @FeignClient(value = "TEST")
+    @FeignClient(value = "PLATFORM-APPROVE")
     interface HelloClient {
         @PostMapping(value = "/approveStepItem/auditItemsNotifyDept")
         String auditItemsNotifyDept(@RequestParam("deptCode") String deptCode);

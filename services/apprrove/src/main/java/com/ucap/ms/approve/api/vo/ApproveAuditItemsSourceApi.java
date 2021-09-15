@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+
 
 import javax.annotation.Resource;
 import java.net.URL;
@@ -30,8 +30,7 @@ public class ApproveAuditItemsSourceApi {
 
     @Resource
     public  ConfigClientController configClientController;
-    @Resource
-    public   RestTemplate restTemplate;
+
     @Resource
     public CommonCacheUtil commonCacheUtil;
 
@@ -74,29 +73,31 @@ public class ApproveAuditItemsSourceApi {
     }
 
     public  String getAccessToken(Boolean refreshToken){
+
+
         String access_token = null;
         try{
-            if(!Boolean.TRUE.equals(refreshToken)){
-                String apiToken = (String) commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get("audit_item_api_token");
-                if (apiToken != null) {
-                    return apiToken;
-                }
-            }
-            MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
-            postParameters.add(configClientController.getGRANT_TYPE(), configClientController.getGRANT_TYPE_VALUE());
-            postParameters.add(configClientController.getCLIENT_ID(), configClientController.getCLIENT_ID_VALUE());
-            postParameters.add(configClientController.getCLIENT_SECRET(), configClientController.getCLIENT_SECRET_VALUE());
-            RequestEntity<MultiValueMap<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_TOKEN_URL()).toURI())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
-                    .body(postParameters);
-            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
-            RequestTokenPayload payload = JSONObject.parseObject(exchange.getBody(),RequestTokenPayload.class);
-            if(!payload.isOk()){
-                throw new RequestInferfaceException(payload.getStatus().getText());
-            }
-            access_token = payload.getCustom().getAccessToken();
-            commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).add(configClientController.getKEY_AUDIT_ITEM_API_TOKEN(), access_token, 20L);
+//            if(!Boolean.TRUE.equals(refreshToken)){
+//                String apiToken = (String) commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).get("audit_item_api_token");
+//                if (apiToken != null) {
+//                    return apiToken;
+//                }
+//            }
+//            MultiValueMap<String, Object> postParameters = new LinkedMultiValueMap<>();
+//            postParameters.add(configClientController.getGRANT_TYPE(), configClientController.getGRANT_TYPE_VALUE());
+//            postParameters.add(configClientController.getCLIENT_ID(), configClientController.getCLIENT_ID_VALUE());
+//            postParameters.add(configClientController.getCLIENT_SECRET(), configClientController.getCLIENT_SECRET_VALUE());
+//            RequestEntity<MultiValueMap<String, Object>> requestEntity = RequestEntity.post(new URL(configClientController.getGET_TOKEN_URL()).toURI())
+//                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+//                    .accept(MediaType.APPLICATION_JSON_UTF8)
+//                    .body(postParameters);
+//            ResponseEntity<String> exchange = restTemplate.exchange(requestEntity, String.class);
+//            RequestTokenPayload payload = JSONObject.parseObject(exchange.getBody(),RequestTokenPayload.class);
+//            if(!payload.isOk()){
+//                throw new RequestInferfaceException(payload.getStatus().getText());
+//            }
+//            access_token = payload.getCustom().getAccessToken();
+//            commonCacheUtil.getCache(CacheCodeEnum.INNERWEB.getValue()).add(configClientController.getKEY_AUDIT_ITEM_API_TOKEN(), access_token, 20L);
         }catch (Exception e){
             e.printStackTrace();
         }
