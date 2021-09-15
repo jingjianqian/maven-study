@@ -9,9 +9,11 @@
         <module name="inner-web" />
         <module name="test" />
         <module name="cache" />
+        <module name="openfeignclient80" />
         <module name="base" />
         <module name="bkmanagement" />
         <module name="apprrove" />
+        <module name="server8001" />
       </profile>
     </annotationProcessing>
   </component>
