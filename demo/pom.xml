@@ -11,6 +11,7 @@
     <modules>
         <module>server8001</module>
         <module>openfeignclient80</module>
+        <module>getway</module>
     </modules>
     <!--
     *===================================================================
