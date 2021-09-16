@@ -15,6 +15,7 @@
         <module name="bkmanagement" />
         <module name="apprrove" />
         <module name="server8001" />
+        <module name="getaway" />
       </profile>
     </annotationProcessing>
   </component>

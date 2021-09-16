@@ -15,15 +15,11 @@
     <modules>
         <module>inner-web</module>
         <module>test</module>
+        <module>getaway</module>
     </modules>
 
     <dependencies>
 
-        <!--spring cloud openfeign-->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
 
         <!--spring boot-->
         <dependency>
@@ -41,16 +37,6 @@
 <!--            <artifactId>spring-cloud-alibaba-dependencies</artifactId>-->
 <!--        </dependency>-->
 
-        <!--nacos服务注册中心-->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-        </dependency>
-        <!--nacos配置中心中心-->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-        </dependency>
 
 
     </dependencies>
